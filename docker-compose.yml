@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    environment:
+      # Domain and URL Configuration - using environment variables for security
+      N8N_HOST: ${N8N_HOST}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: ${WEBHOOK_URL}
+      
+      # Security
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      
+      # Database Configuration - connects to the postgres service below
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: n8n-postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+      
+      # Timezone Configuration
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE}
+      TZ: ${GENERIC_TIMEZONE}
+      
+      # Optional: External Libraries (uncomment if you need axios, lodash etc. in Function nodes)
+      # NODE_FUNCTION_ALLOW_EXTERNAL: ${NODE_FUNCTION_ALLOW_EXTERNAL}
+      
+      # Optional: Email Configuration (uncomment if you want n8n to send emails)
+      # N8N_EMAIL_MODE: smtp
+      # N8N_SMTP_HOST: ${N8N_SMTP_HOST}
+      # N8N_SMTP_PORT: ${N8N_SMTP_PORT}
+      # N8N_SMTP_USER: ${N8N_SMTP_USER}
+      # N8N_SMTP_PASS: ${N8N_SMTP_PASS}
+      # N8N_SMTP_SENDER: ${N8N_SMTP_SENDER}
+      
+    ports:
+      - 5678:5678
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - n8n-network
+    depends_on:
+      n8n-postgres:
+        condition: service_healthy
+
+  n8n-postgres:
+    image: postgres:16-alpine
+    container_name: n8n-postgres
+    restart: unless-stopped
+    environment:
+      # Using environment variables for security
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - n8n_postgres_data:/var/lib/postgresql/data
+    networks:
+      - n8n-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  n8n_data:
+    external: false
+  n8n_postgres_data:
+    external: false
+
+networks:
+  n8n-network:
+    external: false
