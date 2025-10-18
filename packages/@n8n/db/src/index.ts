@@ -15,7 +15,9 @@ export { isValidEmail } from './utils/is-valid-email';
 export { separate } from './utils/separate';
 export { sql } from './utils/sql';
 export { idStringifier, lowerCaser, objectRetriever, sqlite } from './utils/transformers';
+export { withTransaction } from './utils/transaction';
 
+export * from './constants';
 export * from './entities';
 export * from './entities/types-db';
 export { NoXss } from './utils/validators/no-xss.validator';
@@ -36,3 +38,6 @@ export { DbConnection } from './connection/db-connection';
 export { DbConnectionOptions } from './connection/db-connection-options';
 
 export { AuthRolesService } from './services/auth.roles.service';
+
+export { In, Like, DataSource } from '@n8n/typeorm';
+export type { FindOptionsWhere } from '@n8n/typeorm';

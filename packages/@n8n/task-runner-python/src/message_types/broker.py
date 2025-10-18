@@ -1,12 +1,13 @@
 from dataclasses import dataclass
-from typing import Literal, Union, List, Dict, Any
+from typing import Literal, Any
 
-from ..constants import (
+from src.constants import (
     BROKER_INFO_REQUEST,
     BROKER_RUNNER_REGISTERED,
     BROKER_TASK_CANCEL,
     BROKER_TASK_OFFER_ACCEPT,
     BROKER_TASK_SETTINGS,
+    BROKER_RPC_RESPONSE,
 )
 
 
@@ -29,7 +30,7 @@ class BrokerTaskOfferAccept:
 
 NodeMode = Literal["all_items", "per_item"]
 
-Items = List[Dict[str, Any]]  # INodeExecutionData[]
+Items = list[dict[str, Any]]  # INodeExecutionData[]
 
 
 @dataclass
@@ -38,6 +39,10 @@ class TaskSettings:
     node_mode: NodeMode
     continue_on_fail: bool
     items: Items
+    workflow_name: str
+    workflow_id: str
+    node_name: str
+    node_id: str
 
 
 @dataclass
@@ -54,10 +59,19 @@ class BrokerTaskCancel:
     type: Literal["broker:taskcancel"] = BROKER_TASK_CANCEL
 
 
-BrokerMessage = Union[
-    BrokerInfoRequest,
-    BrokerRunnerRegistered,
-    BrokerTaskOfferAccept,
-    BrokerTaskSettings,
-    BrokerTaskCancel,
-]
+@dataclass
+class BrokerRpcResponse:
+    call_id: str
+    task_id: str
+    status: str
+    type: Literal["broker:rpcresponse"] = BROKER_RPC_RESPONSE
+
+
+BrokerMessage = (
+    BrokerInfoRequest
+    | BrokerRunnerRegistered
+    | BrokerTaskOfferAccept
+    | BrokerTaskSettings
+    | BrokerTaskCancel
+    | BrokerRpcResponse
+)
