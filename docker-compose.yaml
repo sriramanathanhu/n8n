@@ -6,7 +6,7 @@ services:
     container_name: n8n-redis
     restart: unless-stopped
     ports:
-      - 6379:6379
+      - "6379:6379"
     volumes:
       - n8n_redis_data:/data
     networks:
@@ -20,107 +20,104 @@ services:
 
   # Main N8N Service
   n8n:
-    image: n8nio/n8n:1.67.0  # Pin version instead of latest
+    image: n8nio/n8n:1.67.0
     container_name: n8n
     restart: unless-stopped
-    
+
     environment:
       # Domain and URL Configuration
       N8N_HOST: ${N8N_HOST}
-      N8N_PORT: 5678
-      N8N_PROTOCOL: https
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}   # set to https only if you have TLS termination
       WEBHOOK_URL: ${WEBHOOK_URL}
-      
+
       # Security
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
-      
+
       # Database Configuration
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: n8n-postgres
-      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_PORT: "5432"
       DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
       DB_POSTGRESDB_USER: ${POSTGRES_USER}
       DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
-      
-      # Connection Pooling - CRITICAL for handling 47 pages
-      DB_POSTGRESDB_POOL_MIN: 20
-      DB_POSTGRESDB_POOL_MAX: 100
-      DB_POSTGRESDB_CONNECTION_TIMEOUT: 30000
-      DB_POSTGRESDB_IDLE_TIMEOUT: 30000
-      
+
+      # Connection Pooling
+      DB_POSTGRESDB_POOL_MIN: "20"
+      DB_POSTGRESDB_POOL_MAX: "100"
+      DB_POSTGRESDB_CONNECTION_TIMEOUT: "30000"
+      DB_POSTGRESDB_IDLE_TIMEOUT: "30000"
+
       # Timezone Configuration
       GENERIC_TIMEZONE: ${GENERIC_TIMEZONE}
       TZ: ${GENERIC_TIMEZONE}
-      
-      # ===== QUEUE & EXECUTION MODE - MOST IMPORTANT =====
-      # Use queue mode for parallel execution instead of sequential
+
+      # Queue & Execution Mode
       N8N_EXECUTIONS_MODE: queue
       N8N_QUEUE_TYPE: redis
-      
+
       # Redis Configuration
       N8N_REDIS_HOST: n8n-redis
-      N8N_REDIS_PORT: 6379
-      N8N_REDIS_DB: 0
-      
-      # ===== CONCURRENCY SETTINGS - FOR 47+ PAGES =====
-      # These control how many webhooks/jobs run in parallel
-      # Start lower, scale up if needed
-      N8N_GENERIC_CONCURRENCY: 50
-      N8N_WEBHOOK_CONCURRENCY: 50
-      
-      # Execution timeouts - increase from defaults
-      N8N_EXECUTION_TIMEOUT: 3600
-      N8N_EXECUTION_DATA_PRUNE_TIMEOUT: 3600
-      N8N_NODE_FUNCTION_TIMEOUT: 300
-      
+      N8N_REDIS_PORT: "6379"
+      N8N_REDIS_DB: "0"
+
+      # Concurrency Settings
+      N8N_GENERIC_CONCURRENCY: "50"
+      N8N_WEBHOOK_CONCURRENCY: "50"
+
+      # Execution timeouts
+      N8N_EXECUTION_TIMEOUT: "3600"
+      N8N_EXECUTION_DATA_PRUNE_TIMEOUT: "3600"
+      N8N_NODE_FUNCTION_TIMEOUT: "300"
+
       # Memory and Performance
       NODE_OPTIONS: --max-old-space-size=6144 --max-semi-space-size=1024
-      
-      # Logging for debugging
+
+      # Logging
       N8N_LOG_LEVEL: info
       N8N_LOG_OUTPUT: console
       N8N_LOG_FILE_LOCATION: /home/node/.n8n/logs
-      
-      # Disable auto-updates (for stability)
-      # N8N_SKIP_WEBHOOK_DEREGISTRATION_SHUTDOWN: true
-      
-      # Execution data pruning - don't run too aggressively
+
+      # Webhook/Shutdown behavior
+      N8N_SKIP_WEBHOOK_DEREGISTRATION_SHUTDOWN: "true"
+
+      # Execution data pruning
       N8N_EXECUTIONS_DATA_PRUNE: "true"
-      N8N_EXECUTIONS_DATA_MAX_AGE: 7200
-      N8N_EXECUTIONS_DATA_PRUNE_MAX_COUNT: 100
-      
-      # Webhook settings
-      N8N_WEBHOOK_TUNNEL_REDIRECT_KEYS:
-      
+      N8N_EXECUTIONS_DATA_MAX_AGE: "7200"
+      N8N_EXECUTIONS_DATA_PRUNE_MAX_COUNT: "100"
+
+      # (Optional) clear or set explicit value if used
+      # N8N_WEBHOOK_TUNNEL_REDIRECT_KEYS: ""
+
     ports:
-      - 5678:5678
-      
+      - "5678:5678"
+
     volumes:
       - n8n_data:/home/node/.n8n
-      - /home/node/.n8n/logs:/home/node/.n8n/logs
-      
+      - n8n_logs:/home/node/.n8n/logs
+
     networks:
       - n8n-network
-      
+
+    # NOTE: depends_on with "condition: service_healthy" is not portable with swarm.
+    # If you need strict readiness ordering, consider an entrypoint wait script.
     depends_on:
-      n8n-postgres:
-        condition: service_healthy
-      n8n-redis:
-        condition: service_healthy
-    
-    # Resource limits - prevent runaway consumption
+      - n8n-postgres
+      - n8n-redis
+
+    # Resource limits: only applied in swarm mode (docker stack deploy)
     deploy:
       resources:
         limits:
-          cpus: '4'
-          memory: 8G
+          cpus: "4"
+          memory: "8G"
         reservations:
-          cpus: '2'
-          memory: 4G
-    
-    # Health check - more lenient to avoid false positives
+          cpus: "2"
+          memory: "4G"
+
+    # Health check - use CMD-SHELL to ensure proper failure handling
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5678/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5678/health || exit 1"]
       interval: 60s
       timeout: 30s
       retries: 5
@@ -131,20 +128,19 @@ services:
     image: postgres:16-alpine
     container_name: n8n-postgres
     restart: unless-stopped
-    
+
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    
+
     volumes:
       - n8n_postgres_data:/var/lib/postgresql/data
-    
+
     networks:
       - n8n-network
-    
-    # PostgreSQL tuning for high load
-    command: 
+
+    command:
       - "postgres"
       - "-c"
       - "max_connections=200"
@@ -154,22 +150,22 @@ services:
       - "effective_cache_size=1GB"
       - "-c"
       - "work_mem=10MB"
-    
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
-    
+
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: 4G
+          cpus: "2"
+          memory: "4G"
         reservations:
-          cpus: '1'
-          memory: 2G
+          cpus: "1"
+          memory: "2G"
 
 volumes:
   n8n_data:
@@ -177,6 +173,8 @@ volumes:
   n8n_postgres_data:
     external: false
   n8n_redis_data:
+    external: false
+  n8n_logs:
     external: false
 
 networks:
