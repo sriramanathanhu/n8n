@@ -11,7 +11,7 @@ services:
       - n8n_redis_data:/data
     networks:
       - n8n-network
-    command: redis-server --appendonly yes --maxmemory 4gb --maxmemory-policy allkeys-lru --timeout 300
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -20,7 +20,7 @@ services:
 
   # Main N8N Service
   n8n:
-    image: n8nio/n8n:1.67.0  # Pinned stable version
+    image: n8nio/n8n:1.67.0  # Pin version instead of latest
     container_name: n8n
     restart: unless-stopped
     
@@ -43,19 +43,17 @@ services:
       DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
       
       # Connection Pooling - CRITICAL for handling 47 pages
-      DB_POSTGRESDB_POOL_MIN: 15
-      DB_POSTGRESDB_POOL_MAX: 50
-      DB_POSTGRESDB_CONNECTION_TIMEOUT: 15000
+      DB_POSTGRESDB_POOL_MIN: 20
+      DB_POSTGRESDB_POOL_MAX: 100
+      DB_POSTGRESDB_CONNECTION_TIMEOUT: 30000
       DB_POSTGRESDB_IDLE_TIMEOUT: 30000
-      DB_POSTGRESDB_STATEMENT_TIMEOUT: 30000
       
-      # Timezone Configuration - CRITICAL FIX FOR NaN ERRORS
-      GENERIC_TIMEZONE=UTC
-      TZ=UTC
-      DB_TIMEZONE=UTC
-      NODE_TZ=UTC
+      # Timezone Configuration
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE}
+      TZ: ${GENERIC_TIMEZONE}
       
-      # ===== QUEUE & EXECUTION MODE - CRITICAL =====
+      # ===== QUEUE & EXECUTION MODE - MOST IMPORTANT =====
+      # Use queue mode for parallel execution instead of sequential
       N8N_EXECUTIONS_MODE: queue
       N8N_QUEUE_TYPE: redis
       
@@ -63,39 +61,36 @@ services:
       N8N_REDIS_HOST: n8n-redis
       N8N_REDIS_PORT: 6379
       N8N_REDIS_DB: 0
-      N8N_REDIS_SOCKET_TIMEOUT: 30000
       
-      # ===== CONCURRENCY SETTINGS - TUNED FOR STABILITY =====
-      # Lower than before to prevent connection pool exhaustion
-      N8N_GENERIC_CONCURRENCY: 30
-      N8N_WEBHOOK_CONCURRENCY: 30
+      # ===== CONCURRENCY SETTINGS - FOR 47+ PAGES =====
+      # These control how many webhooks/jobs run in parallel
+      # Start lower, scale up if needed
+      N8N_GENERIC_CONCURRENCY: 50
+      N8N_WEBHOOK_CONCURRENCY: 50
       
-      # Execution timeouts
+      # Execution timeouts - increase from defaults
       N8N_EXECUTION_TIMEOUT: 3600
+      N8N_EXECUTION_DATA_PRUNE_TIMEOUT: 3600
       N8N_NODE_FUNCTION_TIMEOUT: 300
       
       # Memory and Performance
       NODE_OPTIONS: --max-old-space-size=6144 --max-semi-space-size=1024
       
       # Logging for debugging
-      N8N_LOG_LEVEL: warn
+      N8N_LOG_LEVEL: info
       N8N_LOG_OUTPUT: console
       N8N_LOG_FILE_LOCATION: /home/node/.n8n/logs
       
-      # Webhook configuration
-      N8N_WEBHOOK_TUNNEL_REDIRECT_KEYS:
+      # Disable auto-updates (for stability)
+      N8N_SKIP_WEBHOOK_DEREGISTRATION_SHUTDOWN: true
       
-      # Database cleanup - prevent bloat
+      # Execution data pruning - don't run too aggressively
       N8N_EXECUTIONS_DATA_PRUNE: "true"
-      N8N_EXECUTIONS_DATA_MAX_AGE: 2592000
-      N8N_EXECUTIONS_DATA_PRUNE_MAX_COUNT: 500
+      N8N_EXECUTIONS_DATA_MAX_AGE: 7200
+      N8N_EXECUTIONS_DATA_PRUNE_MAX_COUNT: 100
       
-      # Webhook processing optimization
+      # Webhook settings
       N8N_WEBHOOK_TUNNEL_REDIRECT_KEYS:
-      N8N_SKIP_WEBHOOK_DEREGISTRATION_SHUTDOWN: "true"
-      
-      # Prevent memory leaks
-      N8N_WORKER_MEMORY_LIMIT: 2048
       
     ports:
       - 5678:5678
@@ -113,7 +108,7 @@ services:
       n8n-redis:
         condition: service_healthy
     
-    # Resource limits
+    # Resource limits - prevent runaway consumption
     deploy:
       resources:
         limits:
@@ -123,9 +118,9 @@ services:
           cpus: '2'
           memory: 4G
     
-    # Health check - more lenient
+    # Health check - more lenient to avoid false positives
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5678/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:5678/health"]
       interval: 60s
       timeout: 30s
       retries: 5
@@ -148,23 +143,17 @@ services:
     networks:
       - n8n-network
     
-    # PostgreSQL tuning for high load with safety
+    # PostgreSQL tuning for high load
     command: 
       - "postgres"
       - "-c"
-      - "max_connections=150"
+      - "max_connections=200"
       - "-c"
       - "shared_buffers=256MB"
       - "-c"
       - "effective_cache_size=1GB"
       - "-c"
       - "work_mem=10MB"
-      - "-c"
-      - "statement_timeout=30000"
-      - "-c"
-      - "idle_in_transaction_session_timeout=60000"
-      - "-c"
-      - "timezone=UTC"
     
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
