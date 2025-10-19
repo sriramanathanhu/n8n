@@ -82,7 +82,7 @@ services:
       N8N_LOG_FILE_LOCATION: /home/node/.n8n/logs
       
       # Disable auto-updates (for stability)
-      N8N_SKIP_WEBHOOK_DEREGISTRATION_SHUTDOWN: true
+      # N8N_SKIP_WEBHOOK_DEREGISTRATION_SHUTDOWN: true
       
       # Execution data pruning - don't run too aggressively
       N8N_EXECUTIONS_DATA_PRUNE: "true"
