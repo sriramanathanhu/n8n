@@ -20,7 +20,7 @@ services:
 
   # Main N8N Service
   n8n:
-    image: n8nio/n8n:1.75.0  # Updated to latest stable
+		image: n8nio/n8n:1.67.0  # Pin version instead of latest
     container_name: n8n
     restart: unless-stopped
     
