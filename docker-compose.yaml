@@ -110,13 +110,13 @@ services:
           cpus: '2'
           memory: 4G
     
-    # Health check - more lenient to avoid false positives
+    # Health check
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5678/health"]
-      interval: 60s
-      timeout: 30s
-      retries: 5
-      start_period: 120s
+      test: ["CMD", "curl", "-f", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # PostgreSQL Database
   n8n-postgres:
