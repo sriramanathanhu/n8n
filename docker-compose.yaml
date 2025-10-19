@@ -20,7 +20,7 @@ services:
 
   # Main N8N Service
   n8n:
-    image: n8nio/n8n:1.67.0  # Pin version instead of latest
+    image: n8nio/n8n:1.75.0  # Updated to latest stable
     container_name: n8n
     restart: unless-stopped
     
@@ -45,6 +45,8 @@ services:
       # Connection Pooling - CRITICAL for handling 47 pages
       DB_POSTGRESDB_POOL_MIN: 20
       DB_POSTGRESDB_POOL_MAX: 100
+      DB_POSTGRESDB_CONNECTION_TIMEOUT: 30000
+      DB_POSTGRESDB_IDLE_TIMEOUT: 30000
       
       # Timezone Configuration
       GENERIC_TIMEZONE: ${GENERIC_TIMEZONE}
@@ -62,8 +64,9 @@ services:
       
       # ===== CONCURRENCY SETTINGS - FOR 47+ PAGES =====
       # These control how many webhooks/jobs run in parallel
-      N8N_GENERIC_CONCURRENCY: 100
-      N8N_WEBHOOK_CONCURRENCY: 100
+      # Start lower, scale up if needed
+      N8N_GENERIC_CONCURRENCY: 50
+      N8N_WEBHOOK_CONCURRENCY: 50
       
       # Execution timeouts - increase from defaults
       N8N_EXECUTION_TIMEOUT: 3600
@@ -80,6 +83,11 @@ services:
       
       # Disable auto-updates (for stability)
       N8N_SKIP_WEBHOOK_DEREGISTRATION_SHUTDOWN: true
+      
+      # Execution data pruning - don't run too aggressively
+      N8N_EXECUTIONS_DATA_PRUNE: "true"
+      N8N_EXECUTIONS_DATA_MAX_AGE: 7200
+      N8N_EXECUTIONS_DATA_PRUNE_MAX_COUNT: 100
       
       # Webhook settings
       N8N_WEBHOOK_TUNNEL_REDIRECT_KEYS:
@@ -110,13 +118,13 @@ services:
           cpus: '2'
           memory: 4G
     
-    # Health check
+    # Health check - more lenient to avoid false positives
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5678/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      test: ["CMD", "curl", "-f", "http://localhost:5678/health"]
+      interval: 60s
+      timeout: 30s
+      retries: 5
+      start_period: 120s
 
   # PostgreSQL Database
   n8n-postgres:
