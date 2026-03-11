@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import KeyboardShortcutTooltip from '@/components/KeyboardShortcutTooltip.vue';
-import { useCanvasOperations } from '@/composables/useCanvasOperations';
+import KeyboardShortcutTooltip from '@/app/components/KeyboardShortcutTooltip.vue';
+import { useCanvasOperations } from '@/app/composables/useCanvasOperations';
 import { useI18n } from '@n8n/i18n';
-import { useRunWorkflow } from '@/composables/useRunWorkflow';
-import { CHAT_TRIGGER_NODE_TYPE } from '@/constants';
-import { useLogsStore } from '@/stores/logs.store';
-import { useWorkflowsStore } from '@/stores/workflows.store';
+import { useRunWorkflow } from '@/app/composables/useRunWorkflow';
+import { CHAT_TRIGGER_NODE_TYPE } from '@/app/constants';
+import { useLogsStore } from '@/app/stores/logs.store';
+import { useWorkflowsStore } from '@/app/stores/workflows.store';
 import { computed, useCssModule } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -65,8 +65,8 @@ async function handleClickExecute() {
 			<template v-if="!readOnly">
 				<template v-if="type === CHAT_TRIGGER_NODE_TYPE">
 					<N8nButton
+						variant="subtle"
 						v-if="isChatOpen"
-						type="secondary"
 						icon="message-circle"
 						size="large"
 						:disabled="isExecuting"
@@ -80,7 +80,7 @@ async function handleClickExecute() {
 						:shortcut="{ keys: ['c'] }"
 					>
 						<N8nButton
-							type="primary"
+							variant="solid"
 							icon="message-circle"
 							size="large"
 							:disabled="isExecuting"
@@ -91,8 +91,8 @@ async function handleClickExecute() {
 					</KeyboardShortcutTooltip>
 				</template>
 				<N8nButton
+					variant="solid"
 					v-else
-					type="primary"
 					icon="flask-conical"
 					size="large"
 					:disabled="isExecuting"
@@ -129,6 +129,7 @@ async function handleClickExecute() {
 		transition:
 			translate 0.1s ease-in,
 			opacity 0.1s ease-in;
+		/* stylelint-disable-next-line @n8n/css-var-naming */
 		transform: scale(var(--canvas-zoom-compensation-factor, 1));
 		transform-origin: center right;
 	}

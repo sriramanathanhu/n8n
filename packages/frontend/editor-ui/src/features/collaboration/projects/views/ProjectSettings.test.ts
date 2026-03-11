@@ -11,14 +11,14 @@ import {
 } from '@/__tests__/utils';
 import ProjectSettings from './ProjectSettings.vue';
 import { useProjectsStore } from '../projects.store';
-import { VIEWS } from '@/constants';
+import { VIEWS } from '@/app/constants';
 import type { Project } from '../projects.types';
 import { ProjectTypes } from '../projects.types';
 import { createProjectListItem } from '../__tests__/utils';
 import { createUser } from '@/__tests__/data/users';
 import { useUsersStore } from '@/features/settings/users/users.store';
-import { useSettingsStore } from '@/stores/settings.store';
-import { useRolesStore } from '@/stores/roles.store';
+import { useSettingsStore } from '@/app/stores/settings.store';
+import { useRolesStore } from '@/app/stores/roles.store';
 import type { FrontendSettings } from '@n8n/api-types';
 
 const mockTrack = vi.fn();
@@ -29,13 +29,13 @@ const { emitters, addEmitter } = useEmitters<
 	'projectMembersTable' | 'n8nUserSelect' | 'n8nIconPicker'
 >();
 
-vi.mock('@/composables/useTelemetry', () => ({
+vi.mock('@/app/composables/useTelemetry', () => ({
 	useTelemetry: () => ({
 		track: mockTrack,
 	}),
 }));
 
-vi.mock('@/composables/useToast', () => ({
+vi.mock('@/app/composables/useToast', () => ({
 	useToast: () => ({
 		showMessage: mockShowMessage,
 		showError: mockShowError,
@@ -714,25 +714,6 @@ describe('ProjectSettings', () => {
 			expect(nameInput).toBeInTheDocument();
 			expect(descInput).toBeInTheDocument();
 			expect(getByTestId('project-members-select')).toBeInTheDocument();
-		});
-	});
-
-	describe('Upgrade dialog', () => {
-		it('should open upgrade dialog when show-upgrade-dialog event is emitted', async () => {
-			const { queryByRole, getByRole } = renderComponent();
-
-			await nextTick();
-
-			// Dialog should not be visible initially
-			expect(queryByRole('dialog')).not.toBeInTheDocument();
-
-			// Emit the show-upgrade-dialog event from the members table
-			emitters.projectMembersTable.emit('show-upgrade-dialog');
-
-			await nextTick();
-
-			// The upgrade dialog should now be visible
-			expect(getByRole('dialog')).toBeInTheDocument();
 		});
 	});
 });

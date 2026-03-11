@@ -2,11 +2,13 @@ import { createTestingPinia } from '@pinia/testing';
 import { createComponentRenderer } from '@/__tests__/render';
 import type { MockedStore } from '@/__tests__/utils';
 import WorkflowExecutionsSidebar from './WorkflowExecutionsSidebar.vue';
-import { useSettingsStore } from '@/stores/settings.store';
+import { useSettingsStore } from '@/app/stores/settings.store';
 import { mockedStore, SETTINGS_STORE_DEFAULT_STATE } from '@/__tests__/utils';
 import { STORES } from '@n8n/stores';
 import merge from 'lodash/merge';
 import { expect, it } from 'vitest';
+import { computed } from 'vue';
+import { WorkflowIdKey } from '@/app/constants/injectionKeys';
 
 vi.mock('vue-router', () => {
 	const location = {};
@@ -22,6 +24,11 @@ vi.mock('vue-router', () => {
 });
 
 const renderComponent = createComponentRenderer(WorkflowExecutionsSidebar, {
+	global: {
+		provide: {
+			[WorkflowIdKey as unknown as string]: computed(() => 'test-workflow-id'),
+		},
+	},
 	pinia: createTestingPinia({
 		initialState: {
 			[STORES.EXECUTIONS]: {

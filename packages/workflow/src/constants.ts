@@ -30,7 +30,6 @@ export const MANUAL_TRIGGER_NODE_TYPE = 'n8n-nodes-base.manualTrigger';
 export const EVALUATION_TRIGGER_NODE_TYPE = 'n8n-nodes-base.evaluationTrigger';
 export const EVALUATION_NODE_TYPE = 'n8n-nodes-base.evaluation';
 export const ERROR_TRIGGER_NODE_TYPE = 'n8n-nodes-base.errorTrigger';
-export const START_NODE_TYPE = 'n8n-nodes-base.start';
 export const EXECUTE_WORKFLOW_NODE_TYPE = 'n8n-nodes-base.executeWorkflow';
 export const EXECUTE_WORKFLOW_TRIGGER_NODE_TYPE = 'n8n-nodes-base.executeWorkflowTrigger';
 export const CODE_NODE_TYPE = 'n8n-nodes-base.code';
@@ -40,21 +39,24 @@ export const MERGE_NODE_TYPE = 'n8n-nodes-base.merge';
 export const AI_TRANSFORM_NODE_TYPE = 'n8n-nodes-base.aiTransform';
 export const FORM_NODE_TYPE = 'n8n-nodes-base.form';
 export const FORM_TRIGGER_NODE_TYPE = 'n8n-nodes-base.formTrigger';
-export const CHAT_TRIGGER_NODE_TYPE = '@n8n/n8n-nodes-langchain.chatTrigger';
-export const RESPOND_TO_CHAT_NODE_TYPE = '@n8n/n8n-nodes-langchain.chat';
 export const WAIT_NODE_TYPE = 'n8n-nodes-base.wait';
 export const RESPOND_TO_WEBHOOK_NODE_TYPE = 'n8n-nodes-base.respondToWebhook';
 export const HTML_NODE_TYPE = 'n8n-nodes-base.html';
 export const MAILGUN_NODE_TYPE = 'n8n-nodes-base.mailgun';
 export const POSTGRES_NODE_TYPE = 'n8n-nodes-base.postgres';
 export const MYSQL_NODE_TYPE = 'n8n-nodes-base.mySql';
+export const MICROSOFT_AGENT365_TRIGGER_NODE_TYPE =
+	'@n8n/n8n-nodes-langchain.microsoftAgent365Trigger';
+export const SCHEDULE_TRIGGER_NODE_TYPE = 'n8n-nodes-base.scheduleTrigger';
+export const DATA_TABLE_NODE_TYPE = 'n8n-nodes-base.dataTable';
+export const DATA_TABLE_TOOL_NODE_TYPE = 'n8n-nodes-base.dataTableTool';
 
 export const STARTING_NODE_TYPES = [
 	MANUAL_TRIGGER_NODE_TYPE,
 	EXECUTE_WORKFLOW_TRIGGER_NODE_TYPE,
 	ERROR_TRIGGER_NODE_TYPE,
-	START_NODE_TYPE,
 	EVALUATION_TRIGGER_NODE_TYPE,
+	FORM_TRIGGER_NODE_TYPE,
 ];
 
 export const SCRIPTING_NODE_TYPES = [
@@ -62,6 +64,13 @@ export const SCRIPTING_NODE_TYPES = [
 	FUNCTION_ITEM_NODE_TYPE,
 	CODE_NODE_TYPE,
 	AI_TRANSFORM_NODE_TYPE,
+];
+
+export const DATA_TABLE_NODE_TYPES = [
+	DATA_TABLE_NODE_TYPE,
+	DATA_TABLE_TOOL_NODE_TYPE,
+	EVALUATION_TRIGGER_NODE_TYPE,
+	EVALUATION_NODE_TYPE,
 ];
 
 export const ADD_FORM_NOTICE = 'addFormPage';
@@ -87,12 +96,42 @@ export const MANUAL_CHAT_TRIGGER_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain
 export const AGENT_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.agent';
 export const CHAIN_LLM_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.chainLlm';
 export const OPENAI_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.openAi';
+export const OPENAI_CHAT_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.lmChatOpenAi';
 export const CHAIN_SUMMARIZATION_LANGCHAIN_NODE_TYPE =
 	'@n8n/n8n-nodes-langchain.chainSummarization';
 export const AGENT_TOOL_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.agentTool';
 export const CODE_TOOL_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.toolCode';
 export const WORKFLOW_TOOL_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.toolWorkflow';
 export const HTTP_REQUEST_TOOL_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.toolHttpRequest';
+export const CHAT_TRIGGER_NODE_TYPE = '@n8n/n8n-nodes-langchain.chatTrigger';
+export const CHAT_NODE_TYPE = '@n8n/n8n-nodes-langchain.chat';
+export const CHAT_TOOL_NODE_TYPE = '@n8n/n8n-nodes-langchain.chatTool';
+export const MEMORY_MANAGER_NODE_TYPE = '@n8n/n8n-nodes-langchain.memoryManager';
+export const MEMORY_BUFFER_WINDOW_NODE_TYPE = '@n8n/n8n-nodes-langchain.memoryBufferWindow';
+export const GUARDRAILS_NODE_TYPE = '@n8n/n8n-nodes-langchain.guardrails';
+export const MCP_CLIENT_TOOL_NODE_TYPE = '@n8n/n8n-nodes-langchain.mcpClientTool';
+export const MCP_CLIENT_NODE_TYPE = '@n8n/n8n-nodes-langchain.mcpClient';
+export const ANTHROPIC_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.anthropic';
+export const OLLAMA_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.ollama';
+export const GOOGLE_GEMINI_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.googleGemini';
+
+export const AI_VENDOR_NODE_TYPES = [
+	OPENAI_LANGCHAIN_NODE_TYPE,
+	ANTHROPIC_LANGCHAIN_NODE_TYPE,
+	OLLAMA_LANGCHAIN_NODE_TYPE,
+	GOOGLE_GEMINI_LANGCHAIN_NODE_TYPE,
+];
+
+export const LANGCHAIN_LM_NODE_TYPE_PREFIX = '@n8n/n8n-nodes-langchain.lm';
+
+export const CHAT_HUB_VECTOR_STORE_PG_VECTOR_NODE_TYPE =
+	'@n8n/n8n-nodes-langchain.chatHubVectorStorePGVector';
+export const CHAT_HUB_VECTOR_STORE_QDRANT_NODE_TYPE =
+	'@n8n/n8n-nodes-langchain.chatHubVectorStoreQdrant';
+export const CHAT_HUB_VECTOR_STORE_PINECONE_NODE_TYPE =
+	'@n8n/n8n-nodes-langchain.chatHubVectorStorePinecone';
+export const DOCUMENT_DEFAULT_DATA_LOADER_NODE_TYPE =
+	'@n8n/n8n-nodes-langchain.documentDefaultDataLoader';
 
 export const LANGCHAIN_CUSTOM_TOOLS = [
 	CODE_TOOL_LANGCHAIN_NODE_TYPE,
@@ -122,3 +161,9 @@ export const PROJECT_ROOT = '0';
 export const WAITING_FORMS_EXECUTION_STATUS = 'n8n-execution-status';
 
 export const CHAT_WAIT_USER_REPLY = 'waitUserReply';
+export const FREE_TEXT_CHAT_RESPONSE_TYPE = 'freeTextChat';
+
+export const BINARY_IN_JSON_PROPERTY = '_files';
+
+export const BINARY_MODE_SEPARATE = 'separate';
+export const BINARY_MODE_COMBINED = 'combined';

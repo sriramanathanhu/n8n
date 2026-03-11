@@ -1,5 +1,5 @@
-import { useNodeHelpers } from '@/composables/useNodeHelpers';
-import { KEEP_AUTH_IN_NDV_FOR_NODES } from '@/constants';
+import { useNodeHelpers } from '@/app/composables/useNodeHelpers';
+import { KEEP_AUTH_IN_NDV_FOR_NODES } from '@/app/constants';
 import type { INodeUi } from '@/Interface';
 import type { ICredentialsResponse } from '../credentials.types';
 import { useCredentialsStore } from '../credentials.store';
@@ -7,14 +7,21 @@ import {
 	getAllNodeCredentialForAuthType,
 	getMainAuthField,
 	isRequiredCredential,
-} from '@/utils/nodeTypesUtils';
+} from '@/app/utils/nodeTypesUtils';
 import {
 	HTTP_REQUEST_NODE_TYPE,
 	type INodeCredentialDescription,
 	type INodeTypeDescription,
 	type NodeParameterValueType,
 } from 'n8n-workflow';
-import { computed, unref, type ComputedRef, type MaybeRef } from 'vue';
+import {
+	computed,
+	toValue,
+	unref,
+	type ComputedRef,
+	type MaybeRef,
+	type MaybeRefOrGetter,
+} from 'vue';
 
 export interface CredentialDropdownOption extends ICredentialsResponse {
 	typeDisplayName: string;
@@ -24,6 +31,7 @@ export function useNodeCredentialOptions(
 	node: ComputedRef<INodeUi | null>,
 	nodeType: ComputedRef<INodeTypeDescription | null>,
 	overrideCredType: MaybeRef<NodeParameterValueType | undefined>,
+	displayAllOptions: MaybeRefOrGetter<boolean> = false,
 ) {
 	const nodeHelpers = useNodeHelpers();
 	const credentialsStore = useCredentialsStore();
@@ -95,6 +103,10 @@ export function useNodeCredentialOptions(
 		const credentialIsRequired = showMixedCredentials(credentialType);
 		if (credentialIsRequired) {
 			if (mainNodeAuthField.value) {
+				if (toValue(displayAllOptions)) {
+					return nodeType.value?.credentials?.map((cred) => cred.name) ?? [];
+				}
+
 				const credentials = getAllNodeCredentialForAuthType(
 					nodeType.value,
 					mainNodeAuthField.value.name,

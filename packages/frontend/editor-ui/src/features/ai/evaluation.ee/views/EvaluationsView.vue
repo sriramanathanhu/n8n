@@ -5,7 +5,7 @@ import { computed, ref, watch } from 'vue';
 import RunsSection from '../components/ListRuns/RunsSection.vue';
 import { useEvaluationStore } from '../evaluation.store';
 import orderBy from 'lodash/orderBy';
-import { useToast } from '@/composables/useToast';
+import { useToast } from '@/app/composables/useToast';
 
 import { N8nButton } from '@n8n/design-system';
 const props = defineProps<{
@@ -75,22 +75,22 @@ watch(runningTestRun, (run) => {
 	<div :class="$style.evaluationsView">
 		<div :class="$style.header">
 			<N8nButton
+				variant="subtle"
 				v-if="runningTestRun"
 				:disabled="cancellingTestRun"
 				:class="$style.runOrStopTestButton"
 				size="small"
 				data-test-id="stop-test-button"
 				:label="locale.baseText('evaluation.stopTest')"
-				type="secondary"
 				@click="stopTest"
 			/>
 			<N8nButton
+				variant="solid"
 				v-else
 				:class="$style.runOrStopTestButton"
 				size="small"
 				data-test-id="run-test-button"
 				:label="locale.baseText('evaluation.runTest')"
-				type="primary"
 				@click="runTest"
 			/>
 		</div>
